@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import timeit
+import sys
 
 
 class Board:
@@ -12,8 +13,8 @@ class Board:
         board (array): A 2 dimensional array (9, 9) representing the board. Empty spaces are represented with zeros. 
     """
 
-    def __init__(self, board=None):
-        self.board = self.createBoard(30) if board is None else board
+    def __init__(self, board=None, numOfCells=30):
+        self.board = self.createBoard(numOfCells) if board is None else board
 
     def isPossible(self, board, y, x, n):
         """
@@ -124,7 +125,7 @@ class Board:
 
         # check if game is possible and if not, redo the process
         possible = False
-        tests = 0
+        t = 0
         while (not possible):
             try:
                 self.board = create()
@@ -132,9 +133,12 @@ class Board:
                 self.solveBoard()
                 possible = True
             except AttributeError:
-                tests += 1
-                print(tests, end="\r")
+                t += 1
+                print(t, end="\r")
                 possible = False
+            except KeyboardInterrupt:
+                print(board)
+                sys.exit()
 
         return board
 
@@ -150,6 +154,6 @@ if __name__ == "__main__":
             [7, 0, 0, 0, 0, 5, 0, 6, 2],
             [0, 0, 3, 7, 0, 0, 0, 0, 0]]
 
-    game = Board()
+    game = Board(numOfCells=45)
     print(np.array(game.board))
     print(np.array(game.solveBoard()))
