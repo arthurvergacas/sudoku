@@ -9,6 +9,13 @@ class Main:
         pygame.init()
 
         self.game = Board(board_path="./boards/easy-boards.json")
+
+        # copy the board to a new array to keep track of things
+        self.originalBoard = np.zeros((9, 9), dtype=int).tolist()
+        for i in range(9):
+            for j in range(9):
+                self.originalBoard[i][j] = self.game.board[i][j]
+
         self.currentSelected = None
 
         self.HEIGHT = 450
@@ -86,7 +93,12 @@ class Main:
                     continue
                 # the current number
                 text = str(self.game.board[i][j])
-                n = self.numbersFont.render(text, True, (0, 0, 0))
+                if self.originalBoard[i][j] != 0:
+                    n = self.numbersFont.render(
+                        text, True, pygame.Color("#B3563E"))
+                else:
+                    n = self.numbersFont.render(
+                        text, True, pygame.Color("#000000"))
 
                 # to center the number
                 x, y = self.numbersFont.size(text)
@@ -114,7 +126,7 @@ class Main:
         # a number between 0 and 8 to indicate the position in the inner array
         cellX = mouseX // resX
 
-        if (cellX, cellY) == self.currentSelected:
+        if (cellX, cellY) == self.currentSelected or self.originalBoard[cellY][cellX] != 0:
             self.currentSelected = None
         else:
             self.currentSelected = (cellX, cellY)
@@ -136,6 +148,17 @@ class Main:
             pygame.draw.rect(self.screen, pygame.Color(
                 "#74FF85"), pygame.Rect(xRec, yRec, resX, resY))
 
+    def setNumber(self, num):
+        """
+        Receive a number and set the current selected cell to this number.
+
+        Args:
+            num (int): The number to be set
+        """
+
+        x, y = self.currentSelected
+        self.game.board[y][x] = num
+
     def run(self):
         while self.running:
             self.clock.tick(30)
@@ -144,10 +167,19 @@ class Main:
                 if event.type == pygame.QUIT:
                     self.running = False
 
-                # check mouse clicked
+                # handle mouse clicked
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.selectCell(pygame.mouse.get_pos())
 
+                # handle keys pressed
+                if event.type == pygame.KEYDOWN:
+                    if self.currentSelected is not None:
+                        try:
+                            self.setNumber(int(pygame.key.name(event.key)))
+                        except ValueError:
+                            print("Only numbers between 1 and 9!")
+                        except Exception:
+                            pass
             self.screen.blit(self.backgound, (0, 0))
 
             self.drawSelected()
