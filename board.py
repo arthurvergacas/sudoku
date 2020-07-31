@@ -1,24 +1,34 @@
 import numpy as np
 import random
 import sys
+import json
 
 
 class Board:
     """
-    Class object to handle a single board as a game.
-    Inherits Game
+    Board object. Stores a board, as well the methods to solve this board, serialize it, or load other boards.
+    If no arguments are passed, the object will create a new board with difficulty 1.
 
     Args:
-        board (array): A 2 dimensional array (9, 9) representing the board. Empty spaces are represented with zeros. 
-        difficulty (int): A number between 1 and 3 (inclusive) to determine difficulty, where 1 is easier, and 3 is harder.
+        board (array): [OPTIONAL default=None] A 2 dimensional array (9, 9) representing the board. Empty spaces are represented with zeros. 
+
+        difficulty (int): [OPTIONAL default=1] A number between 1 and 3 (inclusive) to determine difficulty, where 1 is easier, and 3 is harder.
+
+        board_path (str): [OPTIONAL default=None] The path to JSON file that stores an array of boards previously saved by the saveBoards() method.
     """
 
-    def __init__(self, board=None, difficulty=1):
+    def __init__(self, board=None, difficulty=1, board_path=None):
+
+        self.board = []
 
         if difficulty > 3 or 0 >= difficulty:
             raise Exception(
                 "The difficulty must be an integer between 1 and 3")
-        self.board = self.createBoard(difficulty) if board is None else board
+        if board_path is None:
+            self.board = self.createBoard(
+                difficulty) if board is None else board
+        else:
+            self.loadBoard(board_path)
 
     def isPossible(self, board, y, x, n):
         """
@@ -120,7 +130,7 @@ class Board:
         dif = {
             "1": 31,
             "2": 27,
-            "3": 24
+            "3": 25
         }
 
         def create():
@@ -161,6 +171,37 @@ class Board:
 
         return board
 
+    def saveBoards(self, file_path, amount, difficulty=None):
+        """
+        Serialize a board in JSON format in a given file
+
+        Args:
+            file_path (str): The path to the file that will contain the data.
+            amount (int): The amount of boards that will be stored.
+            difficulty (int): NUmber between 1 and 3 to define difficulty of the board.
+        """
+        data = []
+        dif = [1, 2, 3] if difficulty is None else [difficulty]
+        for i in range(amount):
+            n = random.choice(dif)
+            data.append(self.createBoard(difficulty=n))
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+
+    def loadBoard(self, file_path):
+        """
+        Load a board that was previously saved in a JSON file
+
+        Args:
+            file_path (str): The path to the file that contain the data.
+        """
+        boards = []
+        with open(file_path) as file:
+            boards = json.load(file)
+
+        self.board = random.choice(boards)
+
 
 if __name__ == "__main__":
     grid = [[4, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -173,5 +214,6 @@ if __name__ == "__main__":
             [7, 0, 0, 0, 0, 5, 0, 6, 2],
             [0, 0, 3, 7, 0, 0, 0, 0, 0]]
 
-    game = Board(difficulty=2)
+    game = Board(board_path="./boards/easy-boards.json")
     print(np.array(game.board))
+    print(np.array(game.solveBoard()))
