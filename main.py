@@ -131,6 +131,70 @@ class Main:
         else:
             self.currentSelected = (cellX, cellY)
 
+    def moveSelected(self, direction):
+        """
+        Move the selected cell in the grid.
+
+        Args:
+            direction (str): The direction to move. Can be: "up", "down", "right", or "left".
+        """
+
+        x, y = self.currentSelected
+
+        canMove = False
+        offset = 1
+
+        if direction == "up":
+            if y != 0:
+                while (not canMove or y - offset > 0):
+                    if self.originalBoard[y - offset][x] == 0:
+                        canMove = True
+                        break
+                    elif y - offset <= 0:
+                        break
+                    offset += 1
+
+                if canMove:
+                    self.currentSelected = (x, y - offset)
+
+        elif direction == "down":
+            if y != 8:
+                while (not canMove or y - offset < 8):
+                    if self.originalBoard[y + offset][x] == 0:
+                        canMove = True
+                        break
+                    elif y + offset >= 8:
+                        break
+                    offset += 1
+
+                if canMove:
+                    self.currentSelected = (x, y + offset)
+
+        elif direction == "right":
+            if x != 8:
+                while (not canMove or x - offset < 8):
+                    if self.originalBoard[y][x + offset] == 0:
+                        canMove = True
+                        break
+                    elif x + offset >= 8:
+                        break
+                    offset += 1
+
+                if canMove:
+                    self.currentSelected = (x + offset, y)
+        elif direction == "left":
+            if x != 0:
+                while (not canMove or x - offset > 0):
+                    if self.originalBoard[y][x - offset] == 0:
+                        canMove = True
+                        break
+                    elif x - offset <= 0:
+                        break
+                    offset += 1
+
+                if canMove:
+                    self.currentSelected = (x - offset, y)
+
     def drawSelected(self):
         """
         Highlight the selected cell
@@ -175,7 +239,18 @@ class Main:
                 if event.type == pygame.KEYDOWN:
                     if self.currentSelected is not None:
                         try:
-                            self.setNumber(int(pygame.key.name(event.key)))
+                            if event.key == pygame.K_BACKSPACE:
+                                self.setNumber(0)
+                            elif event.key == pygame.K_UP:
+                                self.moveSelected("up")
+                            elif event.key == pygame.K_DOWN:
+                                self.moveSelected("down")
+                            elif event.key == pygame.K_RIGHT:
+                                self.moveSelected("right")
+                            elif event.key == pygame.K_LEFT:
+                                self.moveSelected("left")
+                            else:
+                                self.setNumber(int(pygame.key.name(event.key)))
                         except ValueError:
                             print("Only numbers between 1 and 9!")
                         except Exception:
