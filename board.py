@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import timeit
 import sys
 
 
@@ -11,10 +10,15 @@ class Board:
 
     Args:
         board (array): A 2 dimensional array (9, 9) representing the board. Empty spaces are represented with zeros. 
+        difficulty (int): A number between 1 and 3 (inclusive) to determine difficulty, where 1 is easier, and 3 is harder.
     """
 
-    def __init__(self, board=None, numOfCells=30):
-        self.board = self.createBoard(numOfCells) if board is None else board
+    def __init__(self, board=None, difficulty=1):
+
+        if difficulty > 3 or 0 >= difficulty:
+            raise Exception(
+                "The difficulty must be an integer between 1 and 3")
+        self.board = self.createBoard(difficulty) if board is None else board
 
     def isPossible(self, board, y, x, n):
         """
@@ -100,14 +104,29 @@ class Board:
         # return the solved board
         return new.tolist()
 
-    def createBoard(self, starter_nums):
+    def createBoard(self, difficulty):
+        """
+        Creates a possible board with given number of cells filled.
+
+        Args:
+            difficulty (int): The difficulty of the board based on how many cells are filled.
+
+        Returns:
+            array: A board to be solved.
+        """
 
         board = []
+
+        dif = {
+            "1": 31,
+            "2": 27,
+            "3": 24
+        }
 
         def create():
             new = np.zeros((9, 9), dtype=int).tolist()
 
-            for i in range(starter_nums):
+            for i in range(dif[str(difficulty)]):
                 # pick random row, collumn and number to fill a cell
                 row = np.random.randint(0, 9)
                 col = np.random.randint(0, 9)
@@ -134,7 +153,7 @@ class Board:
                 possible = True
             except AttributeError:
                 t += 1
-                print(t, end="\r")
+                print(f"Boards tested: {t}", end="\r")
                 possible = False
             except KeyboardInterrupt:
                 print(board)
@@ -154,6 +173,5 @@ if __name__ == "__main__":
             [7, 0, 0, 0, 0, 5, 0, 6, 2],
             [0, 0, 3, 7, 0, 0, 0, 0, 0]]
 
-    game = Board(numOfCells=45)
+    game = Board(difficulty=2)
     print(np.array(game.board))
-    print(np.array(game.solveBoard()))
