@@ -128,9 +128,9 @@ class Board:
         board = []
 
         dif = {
-            "1": 31,
+            "1": 33,
             "2": 27,
-            "3": 25
+            "3": 26
         }
 
         def create():
@@ -215,5 +215,7 @@ if __name__ == "__main__":
             [0, 0, 3, 7, 0, 0, 0, 0, 0]]
 
     game = Board(board_path="./boards/easy-boards.json")
-    print(np.array(game.board))
-    print(np.array(game.solveBoard()))
+
+    game.saveBoards("./boards/easy-boards.json", 15, difficulty=1)
+    game.saveBoards("./boards/medium-boards.json", 15, difficulty=2)
+    game.saveBoards("./boards/hard-boards.json", 15, difficulty=3)
