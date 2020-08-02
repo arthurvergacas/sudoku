@@ -8,20 +8,8 @@ class Main:
     def __init__(self):
         pygame.init()
 
-        self.game = Board(board_path="./boards/easy-boards.json")
-
-        self.solvedBoard = self.game.solveBoard()
-
-        # copy the board to a new array to keep track of things
-        self.originalBoard = np.zeros((9, 9), dtype=int).tolist()
-        for i in range(9):
-            for j in range(9):
-                self.originalBoard[i][j] = self.game.board[i][j]
-
-        # the board to keep track of the pencil numbers
-        self.pencilBoard = np.zeros((9, 9), dtype=int).tolist()
-
-        self.currentSelected = None
+        # start game
+        self.startGame(2)
 
         # WINDOW DIMENSIONS
         self.WIDTH = 450
@@ -216,7 +204,7 @@ class Main:
 
         if self.currentSelected is not None:
             self.highlightCell(self.currentSelected, pygame.Color(
-                "#73FF98"))
+                "#64DE84"))
 
     def drawAllEqual(self):
         """
@@ -262,6 +250,9 @@ class Main:
             self.pencilBoard[y][x] = num
 
     def drawNumsLeft(self):
+        """
+        Show to the player how many numbers are left to complete the board.
+        """
 
         resX = self.WIDTH / 9
 
@@ -319,6 +310,35 @@ class Main:
             yPos = circleY + 1
 
             self.screen.blit(leftNumber, (xPos, yPos))
+
+    def startGame(self, difficulty):
+        """
+        Set everything up to the game begin.
+
+        Args:
+            difficulty (int): Number between 1 and 3 (inclusive) to determine the difficulty of the game.
+        """
+
+        # create game instance with given difficulty
+        dif = [
+            "easy-boards.json",
+            "medium-boards.json",
+            "hard-boards.json"
+        ]
+        self.game = Board(board_path=f"./boards/{dif[difficulty - 1]}")
+
+        self.solvedBoard = self.game.solveBoard()
+
+        # copy the board to a new array to keep track of things
+        self.originalBoard = np.zeros((9, 9), dtype=int).tolist()
+        for i in range(9):
+            for j in range(9):
+                self.originalBoard[i][j] = self.game.board[i][j]
+
+        # the board to keep track of the pencil numbers
+        self.pencilBoard = np.zeros((9, 9), dtype=int).tolist()
+
+        self.currentSelected = None
 
     def validateBoard(self):
         """
