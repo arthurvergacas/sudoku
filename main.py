@@ -261,6 +261,65 @@ class Main:
                 self.game.board[y][x] = 0
             self.pencilBoard[y][x] = num
 
+    def drawNumsLeft(self):
+
+        resX = self.WIDTH / 9
+
+        # to loop for every number from 1 to 9
+        for i in range(1, 10):
+            # to keep track of how many numbers currently exist in the board
+            existing = 0
+            for k in range(9):
+                for j in range(9):
+                    if self.game.board[k][j] == i:
+                        existing += 1
+            left = 9 - existing
+
+            # texts
+            numText = str(i)
+            leftText = str(left)
+
+            # background for each number
+            circleX = int(resX / 2 + resX * (i - 1))
+            circleY = 490
+
+            if left == 0:
+                pygame.draw.circle(
+                    self.screen, pygame.Color("#30332E"), (circleX, circleY), 24)
+            else:
+                pygame.draw.circle(
+                    self.screen, pygame.Color("#6B7367"), (circleX, circleY), 24)
+
+            # CURRENT NUMBER
+            # font
+            numberFont = pygame.font.SysFont('arial', 26)
+            x, y = numberFont.size(numText)
+
+            number = numberFont.render(numText, True, pygame.Color("#EEFFE6"))
+
+            xPos = int(((i - 1) * resX + resX / 2) - x / 2)
+            yPos = circleY - 24
+
+            self.screen.blit(number, (xPos, yPos))
+
+            # LEFT NUMBER
+            leftFont = pygame.font.SysFont('arial', 17)
+
+            if left < 0:
+                leftText = str(left * -1)
+                x, y = leftFont.size(leftText)
+                leftNumber = leftFont.render(
+                    leftText, True, pygame.Color("#B33A34"))
+            else:
+                x, y = leftFont.size(leftText)
+                leftNumber = leftFont.render(
+                    leftText, True, pygame.Color("#B3BFAC"))
+
+            xPos = int(((i - 1) * resX + resX / 2) - x / 2)
+            yPos = circleY + 1
+
+            self.screen.blit(leftNumber, (xPos, yPos))
+
     def validateBoard(self):
         """
         Validates the current board.
@@ -325,6 +384,8 @@ class Main:
                                             int(pygame.key.name(event.key)))
                             except Exception:
                                 pass
+                    else:
+                        self.currentSelected = (0, 0)
             self.screen.blit(self.backgound, (0, 0))
 
             # GAME LOGIC
@@ -340,6 +401,7 @@ class Main:
             # GAME UI
             self.drawGrid()
             self.drawNumbers()
+            self.drawNumsLeft()
 
             pygame.display.update()
 
