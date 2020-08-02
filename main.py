@@ -10,6 +10,8 @@ class Main:
 
         self.game = Board(board_path="./boards/easy-boards.json")
 
+        self.solvedBoard = self.game.solveBoard()
+
         # copy the board to a new array to keep track of things
         self.originalBoard = np.zeros((9, 9), dtype=int).tolist()
         for i in range(9):
@@ -21,13 +23,19 @@ class Main:
 
         self.currentSelected = None
 
-        self.HEIGHT = 450
+        # WINDOW DIMENSIONS
         self.WIDTH = 450
+        self.HEIGHT = 525
+
+        # BOARD DIMENSIONS
+        self.BOARD_HEIGHT = 450
+        self.BOARD_WIDTH = 450
 
         pygame.display.set_caption("Sudoku!")
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        self.screen.fill(pygame.Color("#A7B3A1"))
 
-        self.backgound = pygame.Surface((self.WIDTH, self.HEIGHT))
+        self.backgound = pygame.Surface((self.WIDTH, self.BOARD_HEIGHT))
         self.backgound.fill(pygame.Color("#ffffff"))
 
         # FONTS
@@ -40,18 +48,18 @@ class Main:
         """
         Draw the 9x9 grid.
         """
-        resY = int(self.HEIGHT / 9)
-        resX = int(self.WIDTH / 9)
+        resY = int(self.BOARD_HEIGHT / 9)
+        resX = int(self.BOARD_WIDTH / 9)
 
         # border lines
         pygame.draw.line(self.backgound, (0, 0, 0),
-                         (0, 0), (self.WIDTH, 0))
+                         (0, 0), (self.BOARD_WIDTH, 0))
+        pygame.draw.line(self.screen, (0, 0, 0),
+                         (0, self.BOARD_HEIGHT), (self.BOARD_WIDTH, self.BOARD_HEIGHT), 3)
         pygame.draw.line(self.backgound, (0, 0, 0),
-                         (0, self.HEIGHT), (self.WIDTH, self.HEIGHT))
+                         (0, 0), (0, self.BOARD_HEIGHT))
         pygame.draw.line(self.backgound, (0, 0, 0),
-                         (0, 0), (0, self.HEIGHT))
-        pygame.draw.line(self.backgound, (0, 0, 0),
-                         (self.WIDTH, 0), (self.WIDTH, self.HEIGHT))
+                         (self.BOARD_WIDTH, 0), (self.BOARD_WIDTH, self.BOARD_HEIGHT))
 
         # 8 because I want to draw the border lines out of the loop
         for i in range(8):
@@ -63,32 +71,32 @@ class Main:
                 # horizontal bold
                 pygame.draw.line(self.screen, (0, 0, 0),
                                  (0, y),
-                                 (self.WIDTH, y), 3)
+                                 (self.BOARD_WIDTH, y), 3)
                 # vertical bold
                 pygame.draw.line(self.screen, (0, 0, 0),
                                  (x, 0),
-                                 (x, self.HEIGHT), 3)
+                                 (x, self.BOARD_HEIGHT), 3)
             else:
                 # horizontal
                 pygame.draw.line(self.screen, (0, 0, 0),
                                  (0, y),
-                                 (self.WIDTH, y))
+                                 (self.BOARD_WIDTH, y))
                 # vertical
                 pygame.draw.line(self.screen, (0, 0, 0),
                                  (x, 0),
-                                 (x, self.HEIGHT))
+                                 (x, self.BOARD_HEIGHT))
 
             pygame.draw.line(self.screen, (0, 0, 0),
                              (x, 0),
-                             (x, self.HEIGHT))
+                             (x, self.BOARD_HEIGHT))
 
     def drawNumbers(self):
         """
         Draw the number on the grid.
         """
 
-        resY = int(self.HEIGHT / 9)
-        resX = int(self.WIDTH / 9)
+        resY = int(self.BOARD_HEIGHT / 9)
+        resX = int(self.BOARD_WIDTH / 9)
 
         for i in range(9):
             for j in range(9):
@@ -137,8 +145,8 @@ class Main:
 
         mouseX, mouseY = mouse_pos
 
-        resY = int(self.HEIGHT / 9)
-        resX = int(self.WIDTH / 9)
+        resY = int(self.BOARD_HEIGHT / 9)
+        resX = int(self.BOARD_WIDTH / 9)
 
         # a number between 0 and 8 to indicate the position in the outter array
         cellY = mouseY // resY
@@ -187,8 +195,8 @@ class Main:
             color (Pygame Color Object / tuple of three int): The color to highlight the cell. Can be either a Pygame Color Object or a tuple, like (255, 255, 255)
         """
 
-        resY = int(self.HEIGHT / 9)
-        resX = int(self.WIDTH / 9)
+        resY = int(self.BOARD_HEIGHT / 9)
+        resX = int(self.BOARD_WIDTH / 9)
 
         x, y = pos
 
@@ -203,8 +211,8 @@ class Main:
         Highlight the selected cell
         """
 
-        resY = int(self.HEIGHT / 9)
-        resX = int(self.WIDTH / 9)
+        resY = int(self.BOARD_HEIGHT / 9)
+        resX = int(self.BOARD_WIDTH / 9)
 
         if self.currentSelected is not None:
             self.highlightCell(self.currentSelected, pygame.Color(
@@ -240,12 +248,44 @@ class Main:
             self.game.board[y][x] = num
 
     def pencilNumber(self, num):
+        """
+        Receive a number and set it to temporary number. Mark the number as a "pencil".
+
+        Args:
+            num (int): The number to be set
+        """
 
         x, y = self.currentSelected
         if self.originalBoard[y][x] == 0:
             if self.game.board[y][x] != 0:
                 self.game.board[y][x] = 0
             self.pencilBoard[y][x] = num
+
+    def validateBoard(self):
+        """
+        Validates the current board.
+
+        Returns:
+            boolean: True if the game is valid, False if invalid.
+        """
+
+        filled = True
+        # check if there are any spot still available
+        for i in range(9):
+            for j in range(9):
+                if self.game.board[i][j] == 0:
+                    filled = False
+
+        if filled:
+            for i in range(9):
+                for j in range(9):
+                    # if any of the game board's numbers is different from the solved board, return False
+                    if self.solvedBoard[i][j] != self.game.board[i][j]:
+                        return False
+            # if didn't returned False, return True
+            return True
+        else:
+            return None
 
     def run(self):
         while self.running:
@@ -287,11 +327,17 @@ class Main:
                                 pass
             self.screen.blit(self.backgound, (0, 0))
 
+            # GAME LOGIC
+            isWon = self.validateBoard()
+            if isWon is not None and isWon == True:
+                # what happens when you win the game?
+                print("WON!")
+
             # HIGHLIGHTS
             self.drawAllEqual()
             self.drawSelected()
 
-            # GAME
+            # GAME UI
             self.drawGrid()
             self.drawNumbers()
 

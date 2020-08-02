@@ -89,16 +89,9 @@ class Board:
             for i in range(9):
                 for j in range(9):
                     if b[i][j] == 0:
-                        # possibles = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
                         for k in range(1, 10):
-
-                            # n = random.choice(possibles)
-                            # possibles.remove(n)
-
                             if self.isPossible(b, i, j, k):
-                                # counter += 1
-                                # print((counter / 9**81) * 100, "%", end='\r')
 
                                 b[i][j] = k
                                 solve()
@@ -106,13 +99,18 @@ class Board:
 
                         return
 
+            # keep track of how many solutions exists
+            counter += 1
             # transform it in a numpy array because numpy arrays are immutable
             new = np.array(b)
 
         # call the function to solve board b
         solve()
-        # return the solved board
-        return new.tolist()
+        # return the solved board if olny one solution exists
+        if counter == 1:
+            return new.tolist()
+        else:
+            raise AttributeError()
 
     def createBoard(self, difficulty):
         """
@@ -128,7 +126,7 @@ class Board:
         board = []
 
         dif = {
-            "1": 33,
+            "1": 35,
             "2": 27,
             "3": 26
         }
@@ -163,7 +161,7 @@ class Board:
                 possible = True
             except AttributeError:
                 t += 1
-                print(f"Boards tested: {t}", end="\r")
+                # print(f"Boards tested: {t}", end="\r")
                 possible = False
             except KeyboardInterrupt:
                 print(board)
@@ -180,11 +178,15 @@ class Board:
             amount (int): The amount of boards that will be stored.
             difficulty (int): NUmber between 1 and 3 to define difficulty of the board.
         """
+        created = 0
+
         data = []
-        dif = [1, 2, 3] if difficulty is None else [difficulty]
+        dif = [1, 2, 3]
         for i in range(amount):
-            n = random.choice(dif)
+            n = random.choice(dif) if difficulty is None else difficulty
+            print(f"Boards created: {created}", end="\r")
             data.append(self.createBoard(difficulty=n))
+            created += 1
 
         with open(file_path, "w") as file:
             json.dump(data, file)
@@ -214,8 +216,8 @@ if __name__ == "__main__":
             [7, 0, 0, 0, 0, 5, 0, 6, 2],
             [0, 0, 3, 7, 0, 0, 0, 0, 0]]
 
-    game = Board(board_path="./boards/easy-boards.json")
+    game = Board(grid)
 
-    game.saveBoards("./boards/easy-boards.json", 15, difficulty=1)
-    game.saveBoards("./boards/medium-boards.json", 15, difficulty=2)
-    game.saveBoards("./boards/hard-boards.json", 15, difficulty=3)
+    game.saveBoards("./boards/easy-boards.json", 10, difficulty=1)
+    game.saveBoards("./boards/medium-boards.json", 10, difficulty=2)
+    game.saveBoards("./boards/hard-boards.json", 10, difficulty=3)
