@@ -1,6 +1,8 @@
 import numpy as np
 import pygame
+import pygame_gui
 from board import Board
+from infoBar import InfoBar
 
 
 class Main:
@@ -8,12 +10,24 @@ class Main:
     def __init__(self):
         pygame.init()
 
-        # start game
-        self.startGame(2)
-
         # WINDOW DIMENSIONS
         self.WIDTH = 450
-        self.HEIGHT = 525
+        self.HEIGHT = 550
+
+        # PYGAME GUI ELEMENTS
+        self.manager = pygame_gui.UIManager((self.WIDTH, self.HEIGHT))
+
+        menuButtonWidth = 60
+        menuButtonHeight = 30
+
+        self.menuButton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                int((self.WIDTH / 2) - menuButtonWidth / 2), 518, menuButtonWidth, menuButtonHeight),
+            text="Menu",
+            manager=self.manager,
+            starting_height=30)
+
+        self.drawMenu()
 
         # BOARD DIMENSIONS
         self.BOARD_HEIGHT = 450
@@ -28,6 +42,9 @@ class Main:
 
         # FONTS
         self.numbersFont = pygame.font.SysFont('arial', 35)
+
+        # start game
+        self.startGame(1)
 
         self.running = True
         self.clock = pygame.time.Clock()
@@ -249,9 +266,68 @@ class Main:
                 self.game.board[y][x] = 0
             self.pencilBoard[y][x] = num
 
+    def startGame(self, difficulty):
+        """
+        Set everything up to the game begin.
+
+        Args:
+            difficulty (int): Number between 1 and 3 (inclusive) to determine the difficulty of the game.
+        """
+
+        # create game instance with given difficulty
+        dif = [
+            "easy-boards.json",
+            "medium-boards.json",
+            "hard-boards.json"
+        ]
+        self.game = Board(board_path=f"./boards/{dif[difficulty - 1]}")
+
+        self.solvedBoard = self.game.solveBoard()
+
+        # copy the board to a new array to keep track of things
+        self.originalBoard = np.zeros((9, 9), dtype=int).tolist()
+        for i in range(9):
+            for j in range(9):
+                self.originalBoard[i][j] = self.game.board[i][j]
+
+        # the board to keep track of the pencil numbers
+        self.pencilBoard = np.zeros((9, 9), dtype=int).tolist()
+
+        self.currentSelected = None
+
+    def validateBoard(self):
+        """
+        Validates the current board.
+
+        Returns:
+            boolean: True if the game is valid, False if invalid.
+        """
+
+        filled = True
+        # check if there are any spot still available
+        for i in range(9):
+            for j in range(9):
+                if self.game.board[i][j] == 0:
+                    filled = False
+
+        if filled:
+            for i in range(9):
+                for j in range(9):
+                    # if any of the game board's numbers is different from the solved board, return False
+                    if self.solvedBoard[i][j] != self.game.board[i][j]:
+                        return False
+            # if didn't returned False, return True
+            return True
+        else:
+            return None
+
+    # INFO BOARD
     def drawNumsLeft(self):
         """
         Show to the player how many numbers are left to complete the board.
+
+        Params:
+            width (int): The width of the board for position.
         """
 
         resX = self.WIDTH / 9
@@ -311,64 +387,63 @@ class Main:
 
             self.screen.blit(leftNumber, (xPos, yPos))
 
-    def startGame(self, difficulty):
+    def refreshInfoBar(self):
         """
-        Set everything up to the game begin.
-
-        Args:
-            difficulty (int): Number between 1 and 3 (inclusive) to determine the difficulty of the game.
+        Refresh info bar to draw the appropriate content.
         """
+        pygame.draw.rect(self.screen, pygame.Color("#A7B3A1"), pygame.Rect(
+            0, self.BOARD_HEIGHT, self.WIDTH, self.HEIGHT - self.BOARD_HEIGHT))
 
-        # create game instance with given difficulty
-        dif = [
-            "easy-boards.json",
-            "medium-boards.json",
-            "hard-boards.json"
-        ]
-        self.game = Board(board_path=f"./boards/{dif[difficulty - 1]}")
-
-        self.solvedBoard = self.game.solveBoard()
-
-        # copy the board to a new array to keep track of things
-        self.originalBoard = np.zeros((9, 9), dtype=int).tolist()
-        for i in range(9):
-            for j in range(9):
-                self.originalBoard[i][j] = self.game.board[i][j]
-
-        # the board to keep track of the pencil numbers
-        self.pencilBoard = np.zeros((9, 9), dtype=int).tolist()
-
-        self.currentSelected = None
-
-    def validateBoard(self):
+    def drawMenu(self):
         """
-        Validates the current board.
-
-        Returns:
-            boolean: True if the game is valid, False if invalid.
+        Draw the difficulty menu.
         """
 
-        filled = True
-        # check if there are any spot still available
-        for i in range(9):
-            for j in range(9):
-                if self.game.board[i][j] == 0:
-                    filled = False
+        # SET DIFFICULTIES
+        buttonWidth = 60
+        buttonHeight = 30
 
-        if filled:
-            for i in range(9):
-                for j in range(9):
-                    # if any of the game board's numbers is different from the solved board, return False
-                    if self.solvedBoard[i][j] != self.game.board[i][j]:
-                        return False
-            # if didn't returned False, return True
-            return True
-        else:
-            return None
+        chunk = int(self.WIDTH / 3)
+        # easy button
+        pos = (int((chunk / 2) * 1 - (buttonWidth / 2)), 470)
+        self.easyButton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect(pos, (buttonWidth, buttonHeight)),
+                                                       text="Easy",
+                                                       manager=self.manager,
+                                                       starting_height=30)
+
+        # normal button
+        pos = (int((chunk / 2) * 3 - (buttonWidth / 2)), 470)
+        self.normalButton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect(pos, (buttonWidth, buttonHeight)),
+                                                         text="Normal",
+                                                         manager=self.manager,
+                                                         starting_height=30)
+
+        # hard button
+        pos = (int((chunk / 2) * 5 - (buttonWidth / 2)), 470)
+        self.hardButton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect(pos, (buttonWidth, buttonHeight)),
+                                                       text="Hard",
+                                                       manager=self.manager,
+                                                       starting_height=30)
+
+    def killMenu(self):
+        """
+        Kill the difficulty menu.
+        """
+
+        self.easyButton.kill()
+        self.easyButton.set_position((0, 1000))
+
+        self.normalButton.kill()
+        self.normalButton.set_position((0, 1000))
+
+        self.hardButton.kill()
+        self.hardButton.set_position((0, 1000))
 
     def run(self):
+        menuIsActive = False
+
         while self.running:
-            self.clock.tick(30)
+            dt = self.clock.tick(30)/1000
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -376,7 +451,10 @@ class Main:
 
                 # handle mouse clicked
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.selectCell(pygame.mouse.get_pos())
+                    pos = pygame.mouse.get_pos()
+                    x, y = pos
+                    if x < self.BOARD_WIDTH and y < self.BOARD_HEIGHT:
+                        self.selectCell(pos)
 
                 # handle keys pressed
                 if event.type == pygame.KEYDOWN:
@@ -406,7 +484,20 @@ class Main:
                                 pass
                     else:
                         self.currentSelected = (0, 0)
+
+                # handle UI elements
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        # MENU BUTTON
+                        if event.ui_element == self.menuButton:
+                            menuIsActive = not menuIsActive
+                            self.killMenu()
+                            self.refreshInfoBar()
+
+                self.manager.process_events(event)
+
             self.screen.blit(self.backgound, (0, 0))
+            self.manager.draw_ui(self.screen)
 
             # GAME LOGIC
             isWon = self.validateBoard()
@@ -421,9 +512,25 @@ class Main:
             # GAME UI
             self.drawGrid()
             self.drawNumbers()
-            self.drawNumsLeft()
+
+            # info bar
+            if menuIsActive != True:
+                self.menuButton.set_text("Menu")
+                self.killMenu()
+
+                self.drawNumsLeft()
+
+                # temporary boolean to execute the drawMenu function just once
+                tempBool = True
+            else:
+                if tempBool:
+                    self.drawMenu()
+                    tempBool = False
+
+                    self.menuButton.set_text("Return")
 
             pygame.display.update()
+            self.manager.update(dt)
 
 
 if __name__ == "__main__":

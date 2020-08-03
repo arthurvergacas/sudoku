@@ -1,5 +1,5 @@
 import numpy as np
-import random
+from random import choice
 import sys
 import json
 
@@ -183,7 +183,7 @@ class Board:
         data = []
         dif = [1, 2, 3]
         for i in range(amount):
-            n = random.choice(dif) if difficulty is None else difficulty
+            n = choice(dif) if difficulty is None else difficulty
             print(f"Boards created: {created}", end="\r")
             data.append(self.createBoard(difficulty=n))
             created += 1
@@ -202,7 +202,7 @@ class Board:
         with open(file_path) as file:
             boards = json.load(file)
 
-        self.board = random.choice(boards)
+        self.board = choice(boards)
 
 
 if __name__ == "__main__":
