@@ -33,7 +33,7 @@ Although this algorithm can perform relatively well, its time complexity is O(in
 
 The game was made with pygame, and was relatively simple if compared to the board solver and generator. The game has:
 
--   A restart function
+-   A restart button
 -   A menu with three option of difficulty (easy, normal and hard)
 -   An info bar that shows how many numbers are left to finish the board
 -   A feature that highlights the numbers that are equal to the one in the selected cell
