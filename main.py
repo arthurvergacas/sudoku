@@ -2,7 +2,6 @@ import numpy as np
 import pygame
 import pygame_gui
 from board import Board
-from infoBar import InfoBar
 
 
 class Main:
@@ -22,10 +21,18 @@ class Main:
 
         self.menuButton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect(
-                int((self.WIDTH / 2) - menuButtonWidth / 2), 518, menuButtonWidth, menuButtonHeight),
+                int(self.WIDTH / 2 - menuButtonWidth - 5), 517, menuButtonWidth, menuButtonHeight),
             text="Menu",
             manager=self.manager,
             starting_height=30)
+
+        self.restartButton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect(
+                int(self.WIDTH / 2 + 5), 517, menuButtonWidth + 10, menuButtonHeight),
+            text="Restart",
+            manager=self.manager,
+            starting_height=30
+        )
 
         self.drawMenu()
 
@@ -44,7 +51,7 @@ class Main:
         self.numbersFont = pygame.font.SysFont('arial', 35)
 
         # start game
-        self.startGame(1)
+        self.startGame(1, True)
 
         self.running = True
         self.clock = pygame.time.Clock()
@@ -266,7 +273,7 @@ class Main:
                 self.game.board[y][x] = 0
             self.pencilBoard[y][x] = num
 
-    def startGame(self, difficulty):
+    def startGame(self, difficulty, isStart=False):
         """
         Set everything up to the game begin.
 
@@ -280,7 +287,17 @@ class Main:
             "medium-boards.json",
             "hard-boards.json"
         ]
-        self.game = Board(board_path=f"./boards/{dif[difficulty - 1]}")
+
+        if isStart:
+            # initialize the self.game variable if is the start of the game
+            self.game = Board(board_path=f"./boards/{dif[difficulty - 1]}")
+        else:
+            # temporary var to grant that the game is a new one
+            temp = Board(board_path=f"./boards/{dif[difficulty - 1]}")
+
+            while (temp.board == self.game.board):
+                temp = Board(board_path=f"./boards/{dif[difficulty - 1]}")
+            self.game = temp
 
         self.solvedBoard = self.game.solveBoard()
 
@@ -294,6 +311,12 @@ class Main:
         self.pencilBoard = np.zeros((9, 9), dtype=int).tolist()
 
         self.currentSelected = None
+
+    def restartGame(self):
+        """
+        Restart the current game.
+        """
+        self.game.board = self.originalBoard
 
     def validateBoard(self):
         """
@@ -493,6 +516,29 @@ class Main:
                             menuIsActive = not menuIsActive
                             self.killMenu()
                             self.refreshInfoBar()
+
+                        # RESTART BUTTON
+                        if event.ui_element == self.restartButton:
+                            self.restartGame()
+
+                        # EASY BUTTON
+                        if event.ui_element == self.easyButton:
+                            self.startGame(1)
+                            self.killMenu()
+                            self.refreshInfoBar()
+                            menuIsActive = False
+                        # NORMAL BUTTON
+                        if event.ui_element == self.normalButton:
+                            self.startGame(2)
+                            self.killMenu()
+                            self.refreshInfoBar()
+                            menuIsActive = False
+                        # HARD BUTTON
+                        if event.ui_element == self.hardButton:
+                            self.startGame(3)
+                            self.killMenu()
+                            self.refreshInfoBar()
+                            menuIsActive = False
 
                 self.manager.process_events(event)
 
