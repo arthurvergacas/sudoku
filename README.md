@@ -15,7 +15,7 @@ To generate boards, I had two rules:
 -   Each board must be solvable
 -   Each board must have only one possible solution
 
-For the difficulties level, I decided to simply lower the number of pre-filled cells in harder games.
+To increase the difficulty level, I decided to simply lower the number of pre-filled cells in harder games.
 
 #### The algorithm was:
 
@@ -23,11 +23,11 @@ For the difficulties level, I decided to simply lower the number of pre-filled c
 -   Check if the location is possible
     -   If it is possible, commit the change to the new board
     -   Otherwise, choose other location and number
--   After all cells filled, check if the game is possible and has only one solution
+-   After all the cells are filled, check if the game is possible and has only one solution
     -   If it is, return the board
     -   Otherwise, create a new board
 
-Although this algorithm can perform relatively well, its time complexity is O(infinity), and sometimes will be stuck in a board for a really long time. But in general it can perform well, and for my game, I generated 30 boards in something near half an hour with a pretty poor processor, so larger quantities should be fine, just more slower.
+Although this algorithm can perform relatively well, its time complexity is O(infinity), and sometimes will be stuck in a board for a really long time. But in general it can perform well, and for my game, I generated 30 boards in something near half an hour with a pretty poor processor, so larger quantities should be fine, just slower.
 
 ### The Game UI and Mechanics
 
